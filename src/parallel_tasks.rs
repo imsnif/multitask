@@ -1,4 +1,4 @@
-use zellij_tile::prelude::PaneManifest;
+use zellij_tile::prelude::{PaneManifest, rename_terminal_pane};
 
 use std::fmt;
 
@@ -14,6 +14,7 @@ pub struct RunTask {
     pub terminal_pane_id: Option<u32>,
     pub is_complete: bool,
     pub succeeded: bool,
+    pub title: Option<String>,
 }
 
 impl ParallelTasks {
@@ -24,9 +25,6 @@ impl ParallelTasks {
     }
     pub fn all_tasks_completed_successfully(&self) -> bool {
         self.run_tasks.iter().all(|t| t.succeeded())
-    }
-    pub fn tasks_failed(&self) -> bool {
-        self.run_tasks.iter().any(|t| t.failed())
     }
     pub fn pane_ids(&self) -> Vec<u32> {
         let mut pane_ids = vec![];
@@ -41,10 +39,15 @@ impl ParallelTasks {
         for (_tab_id, panes) in &pane_manifest.panes {
             for pane in panes {
                 for task in &mut self.run_tasks {
-                    if !task.is_complete() {
-                        let stringified_task = task.to_string();
-                        if Some(stringified_task) == pane.terminal_command && pane.exited {
+                    let stringified_task = task.to_string();
+                    if Some(stringified_task) == pane.terminal_command {
+                        if task.terminal_pane_id.is_none() {
                             task.mark_pane_id(pane.id);
+                            if let Some(title) = &task.title {
+                                rename_terminal_pane(pane.id as i32, title);
+                            }
+                        }
+                        if !task.is_complete() && pane.exited {
                             task.mark_complete(pane.exit_status);
                             break;
                         }
@@ -73,17 +76,19 @@ impl RunTask {
             ..Default::default()
         }
     }
-    pub fn from_file_line(file_line: &str) -> Self {
+    pub fn from_file_line(file_line: &str, step_number: usize) -> Self {
         Self::new(vec!["bash", "-c", file_line])
+            .pane_title(format!("STEP {} - {}", step_number, file_line))
+    }
+    pub fn pane_title(mut self, title: String) -> Self {
+        self.title = Some(title);
+        self
     }
     pub fn is_complete(&self) -> bool {
         self.is_complete
     }
     pub fn succeeded(&self) -> bool {
         self.is_complete && self.succeeded
-    }
-    pub fn failed(&self) -> bool {
-        self.is_complete && !self.succeeded
     }
     pub fn mark_pane_id(&mut self, pane_id: u32) {
         self.terminal_pane_id = Some(pane_id);

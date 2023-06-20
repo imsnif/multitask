@@ -17,14 +17,16 @@ pub fn parse_multitask_file(filename: PathBuf) -> Result<Vec<ParallelTasks>, std
     let stringified_file = std::fs::read_to_string(filename)?;
     let mut parallel_tasks = vec![];
     let mut current_tasks = vec![];
+    let mut current_step = 1;
     for line in stringified_file.lines() {
         let line = line.to_string();
         let line_is_empty = line.trim().is_empty();
         if !line.starts_with("#") && !line_is_empty {
-            let task = RunTask::from_file_line(&line);
+            let task = RunTask::from_file_line(&line, current_step);
             current_tasks.push(task);
         } else if line_is_empty && !current_tasks.is_empty() {
             parallel_tasks.push(ParallelTasks::new(current_tasks.drain(..).collect()));
+            current_step += 1;
         }
     }
     if !current_tasks.is_empty() {
