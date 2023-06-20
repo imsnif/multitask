@@ -17,7 +17,7 @@ echo "so will I!"
 [zellij]: https://github.com/zellij-org/zellij
 
 ## Installation
-1. Download the `multitask.wasm` file from the latest release
+1. Download the `multitask.wasm` file from the release matching your installed Zellij version
 2. Place it in `~/zellij-plugins`
 3. From within Zellij, run `zellij action start-or-reload-plugin file:~/zellij-plugins/multitask.wasm`
 
