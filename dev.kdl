@@ -1,5 +1,4 @@
 layout {
-    cwd "/home/aram/code/multitask"
     pane size=1 borderless=true {
         plugin location="zellij:tab-bar"
     }
