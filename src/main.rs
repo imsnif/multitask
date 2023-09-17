@@ -2,7 +2,8 @@ mod parallel_tasks;
 mod multitask_file;
 use zellij_tile::prelude::*;
 
-use std::collections::VecDeque;
+
+use std::collections::{VecDeque, BTreeMap};
 use std::path::PathBuf;
 use std::time::{Instant, Duration};
 
@@ -26,7 +27,8 @@ struct State {
 register_plugin!(State);
 
 impl ZellijPlugin for State {
-    fn load(&mut self) {
+    fn load(&mut self, _: BTreeMap<String, String>) {
+        request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles, PermissionType::OpenTerminalsOrPlugins]);
         subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemDelete, EventType::Key]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
         self.multitask_file = PathBuf::from(".multitask");
@@ -65,7 +67,12 @@ impl State {
     pub fn start_current_tasks(&mut self) {
         if let Some(running_tasks) = &self.running_tasks {
             for task in &running_tasks.run_tasks {
-                open_command_pane_floating(&task.command, task.args.iter().map(|a| a.as_str()).collect());
+                let cmd = CommandToRun {
+                    path: (&task.command).into(), 
+                    args: task.args.clone(),
+                    cwd: None
+                };
+                open_command_pane_floating(cmd);
             }
         }
     }
@@ -73,13 +80,13 @@ impl State {
         if let Some(running_tasks) = self.running_tasks.as_ref() {
             for task in &running_tasks.run_tasks {
                 if let Some(terminal_pane_id) = task.terminal_pane_id {
-                    focus_terminal_pane(terminal_pane_id as i32, true);
+                    focus_terminal_pane(terminal_pane_id as u32, true);
                     toggle_pane_embed_or_eject();
                     self.completed_task_ids.push(terminal_pane_id);
                 }
             }
             if let Some(edit_pane_id) = self.edit_pane_id {
-                focus_terminal_pane(edit_pane_id as i32, false);
+                focus_terminal_pane(edit_pane_id as u32, false);
             }
         }
         self.running_tasks = None;
@@ -95,7 +102,7 @@ impl State {
         }
         all_tasks.append(&mut self.completed_task_ids.drain(..).collect());
         for pane_id in all_tasks {
-            close_terminal_pane(pane_id as i32);
+            close_terminal_pane(pane_id as u32);
         }
         self.running_tasks = None;
         self.completed_task_ids = vec![];
