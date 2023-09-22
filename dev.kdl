@@ -14,13 +14,7 @@ layout {
                     // if you have "watchexec" installed, you can comment the above line and uncomment the below one to build + reload the plugin on fs changes
                     // args "-c" "watchexec 'cargo build && zellij action start-or-reload-plugin file:target/wasm32-wasi/debug/multitask.wasm'"
                 }
-                pane expanded=true {
-                    plugin location="file:target/wasm32-wasi/debug/multitask.wasm"
-                }
             }
         }
-    }
-    pane size=2 borderless=true {
-        plugin location="zellij:status-bar"
     }
 }
