@@ -2,8 +2,8 @@ mod parallel_tasks;
 mod multitask_file;
 use zellij_tile::prelude::*;
 
-
 use std::collections::{VecDeque, BTreeMap};
+
 use std::path::PathBuf;
 use std::time::{Instant, Duration};
 
