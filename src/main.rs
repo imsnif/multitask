@@ -22,14 +22,19 @@ struct State {
     last_run: Option<Instant>,
     is_hidden: bool,
     plugin_id: Option<u32>,
+    shell: String,
 }
 
 impl ZellijPlugin for State {
-    fn load(&mut self, _: BTreeMap<String, String>) {
+    fn load(&mut self, config: BTreeMap<String, String>) {
         request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles, PermissionType::OpenTerminalsOrPlugins]);
         subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemDelete, EventType::Key]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
         self.multitask_file = PathBuf::from("/host").join(".multitask");
+        self.shell = match config.get("shell") {
+            Some(s) => String::from(s),
+            _ => String::from("bash")
+        };
         show_self(true);
     }
 
@@ -107,7 +112,7 @@ impl State {
     }
     pub fn parse_file(&mut self) -> bool {
         let filename = PathBuf::from("/host").join(&self.multitask_file);
-        match parse_multitask_file(filename) {
+        match parse_multitask_file(filename, self.shell.as_str()) {
             Ok(new_tasks) => {
                 self.tasks = new_tasks.into();
                 return true;
