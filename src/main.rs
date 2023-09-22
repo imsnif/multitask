@@ -27,7 +27,7 @@ struct State {
 
 impl ZellijPlugin for State {
     fn load(&mut self, config: BTreeMap<String, String>) {
-        request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles, PermissionType::OpenTerminalsOrPlugins]);
+        request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles]);
         subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemDelete, EventType::Key]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
         self.multitask_file = PathBuf::from("/host").join(".multitask");
