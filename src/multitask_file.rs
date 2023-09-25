@@ -13,7 +13,7 @@ pub fn create_file_with_text(path: &Path, text: &str) {
     };
 }
 
-pub fn parse_multitask_file(filename: PathBuf) -> Result<Vec<ParallelTasks>, std::io::Error> {
+pub fn parse_multitask_file(filename: PathBuf, shell: &str) -> Result<Vec<ParallelTasks>, std::io::Error> {
     let stringified_file = std::fs::read_to_string(filename)?;
     let mut parallel_tasks = vec![];
     let mut current_tasks = vec![];
@@ -22,7 +22,7 @@ pub fn parse_multitask_file(filename: PathBuf) -> Result<Vec<ParallelTasks>, std
         let line = line.to_string();
         let line_is_empty = line.trim().is_empty();
         if !line.starts_with("#") && !line_is_empty {
-            let task = RunTask::from_file_line(&line, current_step);
+            let task = RunTask::from_file_line(shell, &line, current_step);
             current_tasks.push(task);
         } else if line_is_empty && !current_tasks.is_empty() {
             parallel_tasks.push(ParallelTasks::new(current_tasks.drain(..).collect()));
