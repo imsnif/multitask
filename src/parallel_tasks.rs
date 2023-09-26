@@ -44,7 +44,7 @@ impl ParallelTasks {
                         if task.terminal_pane_id.is_none() {
                             task.mark_pane_id(pane.id);
                             if let Some(title) = &task.title {
-                                rename_terminal_pane(pane.id as i32, title);
+                                rename_terminal_pane(pane.id as u32, title);
                             }
                         }
                         if !task.is_complete() && pane.exited {
@@ -76,8 +76,8 @@ impl RunTask {
             ..Default::default()
         }
     }
-    pub fn from_file_line(file_line: &str, step_number: usize) -> Self {
-        Self::new(vec!["bash", "-c", file_line])
+    pub fn from_file_line(shell: &str, file_line: &str, step_number: usize) -> Self {
+        Self::new(vec![shell, "-c", file_line])
             .pane_title(format!("STEP {} - {}", step_number, file_line))
     }
     pub fn pane_title(mut self, title: String) -> Self {
