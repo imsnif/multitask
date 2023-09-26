@@ -1,0 +1,27 @@
+name: Publish new release
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+
+env:
+    CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build distributables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install wasm32-wasi
+        run: rustup target add wasm32-wasi
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --release
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+            files: ./target/wasm32-wasi/release/multitask.wasm
+
