@@ -135,7 +135,7 @@ impl State {
         self.stop_run();
         create_file_with_text(
             &self.multitask_file,
-            &format!("{}{}\n\n{}\n{}\n{}\n{}\n",
+            &format!("{}{}\n#\n{}\n{}\n{}\n{}\n",
                 "#!", self.shell,
                 "# Hi there! Anything below these lines will be executed on save.",
                 "# One command per line.",
