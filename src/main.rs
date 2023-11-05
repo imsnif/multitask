@@ -17,12 +17,14 @@ struct State {
     tasks: VecDeque<ParallelTasks>,
     running_tasks: Option<ParallelTasks>,
     multitask_file: PathBuf,
+    multitask_file_name: String,
     completed_task_ids: Vec<u32>,
     edit_pane_id: Option<u32>,
     last_run: Option<Instant>,
     is_hidden: bool,
     plugin_id: Option<u32>,
     shell: String,
+    cwd: Option<PathBuf>,
 }
 
 impl ZellijPlugin for State {
@@ -30,10 +32,18 @@ impl ZellijPlugin for State {
         request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles]);
         subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemDelete, EventType::Key]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
-        self.multitask_file = PathBuf::from("/host").join(".multitask");
+
+        // Creates a unique filename for this plugin instance, e.g., /host/.multitask1
+        self.multitask_file_name = format!(".multitask{}",get_plugin_ids().plugin_id.to_string());
+        self.multitask_file = PathBuf::from("/host").join(self.multitask_file_name.clone());
+
         self.shell = match config.get("shell") {
             Some(s) => String::from(s),
             _ => String::from("bash")
+        };
+        self.cwd = match config.get("cwd") {
+            Some(s) => Some(PathBuf::from(s)),
+            _ => None
         };
         show_self(true);
     }
@@ -73,7 +83,7 @@ impl State {
                 let cmd = CommandToRun {
                     path: (&task.command).into(), 
                     args: task.args.clone(),
-                    cwd: None
+                    cwd: self.cwd.clone()
                 };
                 open_command_pane_floating(cmd);
             }
@@ -143,7 +153,8 @@ impl State {
                 "# Enjoy!"
             )
         );
-        let stringified_layout_for_new_tab = include_str!("assets/multitask_layout.kdl");
+        let dark = include_str!("assets/multitask_layout.kdl");
+        let stringified_layout_for_new_tab = &dark.replace(".multitask",self.multitask_file_name.as_str());
         new_tabs_with_layout(stringified_layout_for_new_tab);
     }
     pub fn gained_focus(&mut self, pane_manifest: &PaneManifest) -> bool {
