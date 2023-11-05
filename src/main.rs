@@ -23,6 +23,7 @@ struct State {
     is_hidden: bool,
     plugin_id: Option<u32>,
     shell: String,
+    cwd: Option<PathBuf>,
 }
 
 impl ZellijPlugin for State {
@@ -34,6 +35,10 @@ impl ZellijPlugin for State {
         self.shell = match config.get("shell") {
             Some(s) => String::from(s),
             _ => String::from("bash")
+        };
+        self.cwd = match config.get("cwd") {
+            Some(s) => Some(PathBuf::from(s)),
+            _ => None
         };
         show_self(true);
     }
@@ -73,7 +78,7 @@ impl State {
                 let cmd = CommandToRun {
                     path: (&task.command).into(), 
                     args: task.args.clone(),
-                    cwd: None
+                    cwd: self.cwd.clone()
                 };
                 open_command_pane_floating(cmd);
             }
