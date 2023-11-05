@@ -24,8 +24,8 @@ echo "so will I!"
 
 ## Installation
 1. Download the `multitask.wasm` file from the release matching your installed Zellij version
-2. Place it in `~/zellij-plugins`
-3. From within Zellij, run ``zellij action launch-or-focus-plugin file:~/zellij-plugins/multitask.wasm --configuration "shell=$SHELL,cwd=`pwd`"``
+2. Place it in `$HOME/zellij-plugins`
+3. From within Zellij, run ``zellij action launch-or-focus-plugin file:$HOME/zellij-plugins/multitask.wasm --configuration "shell=$SHELL,cwd=`pwd`"``
 
 ## Development
 
