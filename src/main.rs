@@ -33,8 +33,11 @@ impl ZellijPlugin for State {
         subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemDelete, EventType::Key]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
 
-        // Creates a unique filename for this plugin instance, e.g., /host/.multitask1
-        self.multitask_file_name = format!(".multitask{}",get_plugin_ids().plugin_id.to_string());
+        self.multitask_file_name = match config.get("multitask_file_name") {
+            Some(s) => format!("{}", s),
+            _ => format!(".multitask{}",get_plugin_ids().plugin_id.to_string()),
+        };
+
         self.multitask_file = PathBuf::from("/host").join(self.multitask_file_name.clone());
 
         self.shell = match config.get("shell") {

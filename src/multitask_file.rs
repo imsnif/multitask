@@ -6,6 +6,9 @@ use std::io::prelude::*;
 use crate::parallel_tasks::{ParallelTasks, RunTask};
 
 pub fn create_file_with_text(path: &Path, text: &str) {
+    if path.exists(){
+        return ();
+    }
     if let Err(e) = std::fs::File::create(PathBuf::from("/host").join(path)).and_then(|mut f| {
         f.write_all(text.as_bytes())
     }) {
