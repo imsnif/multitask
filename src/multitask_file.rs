@@ -6,11 +6,15 @@ use std::io::prelude::*;
 use crate::parallel_tasks::{ParallelTasks, RunTask};
 
 pub fn create_file_with_text(path: &Path, text: &str) {
-    if let Err(e) = std::fs::File::create(PathBuf::from("/host").join(path)).and_then(|mut f| {
-        f.write_all(text.as_bytes())
-    }) {
-        eprintln!("Failed to create file with error: {}", e);
-    };
+    if !path.exists() {
+        // Only create the file if it does not already exists. Otherwise, use the file that is
+        // already there.
+        if let Err(e) = std::fs::File::create(PathBuf::from("/host").join(path)).and_then(|mut f| {
+            f.write_all(text.as_bytes())
+        }) {
+            eprintln!("Failed to create file with error: {}", e);
+        };
+    }
 }
 
 pub fn parse_multitask_file(filename: PathBuf, shell: &str) -> Result<Vec<ParallelTasks>, std::io::Error> {
