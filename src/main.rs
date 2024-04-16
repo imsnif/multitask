@@ -88,7 +88,7 @@ impl State {
                     args: task.args.clone(),
                     cwd: self.cwd.clone()
                 };
-                open_command_pane_floating(cmd);
+                open_command_pane_floating(cmd, None);
             }
         }
     }
@@ -174,9 +174,9 @@ impl State {
         }
         return false;
     }
-    pub fn multitask_file_was_updated(&mut self, changed_paths: &Vec<PathBuf>) -> bool {
+    pub fn multitask_file_was_updated(&mut self, changed_paths: &Vec<(PathBuf, Option<FileMetadata>)>) -> bool {
         for path in changed_paths {
-            if path == &PathBuf::from("/host").join(&self.multitask_file) {
+            if &path.0 == &PathBuf::from("/host").join(&self.multitask_file) {
                 if self.last_run
                     .map(|l| l.elapsed() > Duration::from_millis(DEBOUNCE_TIME_MS))
                         .unwrap_or(true) {
