@@ -48,6 +48,7 @@ impl ZellijPlugin for State {
             Some(s) => Some(PathBuf::from(s)),
             _ => None
         };
+        watch_filesystem();
         show_self(true);
     }
 
