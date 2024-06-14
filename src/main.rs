@@ -30,7 +30,7 @@ struct State {
 impl ZellijPlugin for State {
     fn load(&mut self, config: BTreeMap<String, String>) {
         request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles]);
-        subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemDelete, EventType::Key]);
+        subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemCreate, EventType::Key]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
 
         self.multitask_file_name = match config.get("multitask_file_name") {
@@ -55,6 +55,11 @@ impl ZellijPlugin for State {
     fn update(&mut self, event: Event) -> bool {
         match event {
             Event::FileSystemUpdate(paths) => {
+                if self.multitask_file_was_updated(&paths) {
+                    self.stop_run_and_reparse_file();
+                }
+            }
+            Event::FileSystemCreate(paths) => {
                 if self.multitask_file_was_updated(&paths) {
                     self.stop_run_and_reparse_file();
                 }
