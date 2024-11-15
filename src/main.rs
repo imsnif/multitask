@@ -24,7 +24,7 @@ struct State {
     is_hidden: bool,
     plugin_id: Option<u32>,
     shell: String,
-    cwd: Option<PathBuf>,
+    ccwd: Option<PathBuf>,
 }
 
 impl ZellijPlugin for State {
@@ -38,16 +38,18 @@ impl ZellijPlugin for State {
             _ => format!(".multitask{}",get_plugin_ids().plugin_id.to_string()),
         };
 
-        self.multitask_file = PathBuf::from("/host").join(self.multitask_file_name.clone());
-
         self.shell = match config.get("shell") {
             Some(s) => String::from(s),
             _ => String::from("bash")
         };
-        self.cwd = match config.get("cwd") {
+
+        self.ccwd = match config.get("ccwd") {
             Some(s) => Some(PathBuf::from(s)),
             _ => None
         };
+
+        self.multitask_file = PathBuf::from("/host").join(self.multitask_file_name.clone());
+
         watch_filesystem();
         show_self(true);
     }
@@ -92,9 +94,9 @@ impl State {
                 let cmd = CommandToRun {
                     path: (&task.command).into(), 
                     args: task.args.clone(),
-                    cwd: self.cwd.clone()
+                    cwd: self.ccwd.clone()
                 };
-                open_command_pane_floating(cmd, None);
+                open_command_pane_floating(cmd, None, BTreeMap::<String, String>::new());
             }
         }
     }
@@ -130,8 +132,7 @@ impl State {
         self.completed_task_ids = vec![];
     }
     pub fn parse_file(&mut self) -> bool {
-        let filename = PathBuf::from("/host").join(&self.multitask_file);
-        match parse_multitask_file(filename, self.shell.as_str()) {
+        match parse_multitask_file(self.multitask_file.clone(), self.shell.as_str()) {
             Ok(new_tasks) => {
                 self.tasks = new_tasks.into();
                 return true;
@@ -182,7 +183,7 @@ impl State {
     }
     pub fn multitask_file_was_updated(&mut self, changed_paths: &Vec<(PathBuf, Option<FileMetadata>)>) -> bool {
         for path in changed_paths {
-            if &path.0 == &PathBuf::from("/host").join(&self.multitask_file) {
+            if &path.0 == &self.multitask_file {
                 if self.last_run
                     .map(|l| l.elapsed() > Duration::from_millis(DEBOUNCE_TIME_MS))
                         .unwrap_or(true) {
