@@ -25,13 +25,13 @@ echo "so will I!"
 ## Installation
 1. Download the `multitask.wasm` file from the release matching your installed Zellij version
 2. Place it in `$HOME/zellij-plugins`
-3. From within Zellij, run ``zellij action start-or-reload-plugin file:$HOME/zellij-plugins/multitask.wasm --configuration "shell=$SHELL,cwd=`pwd`"``
+3. From within Zellij, run ``zellij action start-or-reload-plugin file:$HOME/zellij-plugins/multitask.wasm --configuration "shell=$SHELL,ccwd=`pwd`"``
 
 ## Configuration options
 | Option | Description |
 | :--- | :--- |
 | shell | Sets the shebang of multitask file. `$SHELL` is the recommended value. |
-| cwd | Sets the current working directory for `multitask`. If no value is given, then the `host` of the `zellij` session is used. |
+| ccwd | Sets the current working directory for `multitask` commands. If no value is given, then the `host` of the `zellij` session is used. |
 | multitask\_file\_name | The name of the multitask file. This can be used to point to a multitask file that already exists or provide a specific name for a new multitask file. If no name is provided, then the multitask file name will be `.multiask#` where `#` is the plugin ID number.
 
 
