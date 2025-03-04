@@ -5,12 +5,10 @@ use zellij_tile::prelude::*;
 use std::collections::{VecDeque, BTreeMap};
 
 use std::path::PathBuf;
-use std::time::{Instant, Duration};
+use std::time::Instant;
 
 use parallel_tasks::ParallelTasks;
 use multitask_file::{parse_multitask_file, create_file_with_text};
-
-const DEBOUNCE_TIME_MS: u64 = 400;
 
 #[derive(Default)]
 struct State {
@@ -30,7 +28,7 @@ struct State {
 impl ZellijPlugin for State {
     fn load(&mut self, config: BTreeMap<String, String>) {
         request_permission(&[PermissionType::ReadApplicationState, PermissionType::ChangeApplicationState, PermissionType::RunCommands, PermissionType::OpenFiles]);
-        subscribe(&[EventType::PaneUpdate, EventType::FileSystemUpdate, EventType::FileSystemCreate, EventType::Key]);
+        subscribe(&[EventType::PaneUpdate]);
         self.plugin_id = Some(get_plugin_ids().plugin_id);
 
         self.multitask_file_name = match config.get("multitask_file_name") {
@@ -50,22 +48,23 @@ impl ZellijPlugin for State {
 
         self.multitask_file = PathBuf::from("/host").join(self.multitask_file_name.clone());
 
-        watch_filesystem();
         show_self(true);
+    }
+
+    fn pipe(&mut self, pipe_message: PipeMessage) -> bool {
+        match pipe_message.payload {
+            Some(msg) => {
+                if msg == "multitask_run" {
+                    self.stop_run_and_reparse_file();
+                }
+            }
+            _ => ()
+        }
+        return false;
     }
 
     fn update(&mut self, event: Event) -> bool {
         match event {
-            Event::FileSystemUpdate(paths) => {
-                if self.multitask_file_was_updated(&paths) {
-                    self.stop_run_and_reparse_file();
-                }
-            }
-            Event::FileSystemCreate(paths) => {
-                if self.multitask_file_was_updated(&paths) {
-                    self.stop_run_and_reparse_file();
-                }
-            }
             Event::PaneUpdate(pane_manifest) => {
                 if self.gained_focus(&pane_manifest) {
                     // whenever the plugin gains focus, eg. with the `LaunchOrFocusPlugin` keybind
@@ -176,18 +175,6 @@ impl State {
                         self.is_hidden = true;
                         return true;
                     }
-                }
-            }
-        }
-        return false;
-    }
-    pub fn multitask_file_was_updated(&mut self, changed_paths: &Vec<(PathBuf, Option<FileMetadata>)>) -> bool {
-        for path in changed_paths {
-            if &path.0 == &self.multitask_file {
-                if self.last_run
-                    .map(|l| l.elapsed() > Duration::from_millis(DEBOUNCE_TIME_MS))
-                        .unwrap_or(true) {
-                    return true;
                 }
             }
         }
