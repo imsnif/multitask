@@ -1,9 +1,9 @@
 [package]
 name = "multitask"
-version = "0.41.2"
+version = "0.42.0"
 authors = ["Aram Drevekenin <aram@poor.dev>", "Carl Leake <leakec57@gmail.com"]
 edition = "2018"
-rust-version = "1.75"
+rust-version = "1.84"
 
 [dependencies]
-zellij-tile = "0.41.2"
+zellij-tile = "0.42.0"
