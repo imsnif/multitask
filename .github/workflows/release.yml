@@ -26,5 +26,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-            files: ./target/wasm32-wasi/release/multitask.wasm
+            files: ./target/wasm32-wasip1/release/multitask.wasm
 
