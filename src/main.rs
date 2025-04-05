@@ -51,13 +51,7 @@ impl ZellijPlugin for State {
         // assets/multitask_layout.kdl
         self.layout = match config.get("layout") {
             Some(s) => {
-                match std::fs::read_to_string(PathBuf::from("/host").join(s)) {
-                    Ok(str) => str,
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        String::from(include_str!("assets/multitask_layout.kdl"))
-                    }
-                }
+                s.to_string()
             },
             _ => String::from(include_str!("assets/multitask_layout.kdl"))
         };
