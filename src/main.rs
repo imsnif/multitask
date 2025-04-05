@@ -23,6 +23,7 @@ struct State {
     plugin_id: Option<u32>,
     shell: String,
     ccwd: Option<PathBuf>,
+    layout: String,
 }
 
 impl ZellijPlugin for State {
@@ -45,6 +46,22 @@ impl ZellijPlugin for State {
             Some(s) => Some(PathBuf::from(s)),
             _ => None
         };
+
+        // Get the user's layout for multitask. If not defined, then fallback to the 
+        // assets/multitask_layout.kdl
+        self.layout = match config.get("layout") {
+            Some(s) => {
+                match std::fs::read_to_string(PathBuf::from("/host").join(s)) {
+                    Ok(str) => str,
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        String::from(include_str!("assets/multitask_layout.kdl"))
+                    }
+                }
+            },
+            _ => String::from(include_str!("assets/multitask_layout.kdl"))
+        };
+        self.layout = self.layout.replace(".multitask",self.multitask_file_name.as_str());
 
         self.multitask_file = PathBuf::from("/host").join(self.multitask_file_name.clone());
 
@@ -162,9 +179,7 @@ impl State {
                 "# Enjoy!"
             )
         );
-        let dark = include_str!("assets/multitask_layout.kdl");
-        let stringified_layout_for_new_tab = &dark.replace(".multitask",self.multitask_file_name.as_str());
-        new_tabs_with_layout(stringified_layout_for_new_tab);
+        new_tabs_with_layout(&self.layout);
     }
     pub fn gained_focus(&mut self, pane_manifest: &PaneManifest) -> bool {
         if let Some(own_plugin_id) = self.plugin_id {
