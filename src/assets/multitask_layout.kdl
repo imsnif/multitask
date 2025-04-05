@@ -1,6 +1,12 @@
 layout {
+    pane size=1 borderless=true {
+        plugin location="tab-bar"
+    }
     pane stacked=true {
         pane edit=".multitask"
+    }
+    pane size=1 borderless=true {
+        plugin location="status-bar"
     }
     swap_floating_layout {
         floating_panes exact_panes=1 {
@@ -23,3 +29,13 @@ layout {
         }
     }
 }
+// Not working as of zellij 0.42.1, will have users put keybind in main config.
+// keybinds {
+//     normal {
+//         bind "Alt 2" { 
+//             MessagePlugin {
+//                 payload "multitask_run"
+//             }
+//         }
+//     }
+// }
